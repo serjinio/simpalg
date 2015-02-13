@@ -1,0 +1,17 @@
+Import('test_env')
+
+conf = Configure(test_env)
+if not conf.CheckLib('check'):
+    print 'Did not find "check" C testing framework library, exiting!'
+    Exit(1)
+test_env = conf.Finish()
+
+test_env.ParseConfig("pkg-config check --cflags --libs")
+test_env.Append(LIBS='simpalg')
+test_env.Append(LIBPATH='#src')
+
+test_lib = test_env.Program('check_simpalg', Glob('*.c'))
+test_env.Test('test.passed', test_lib)
+test_env.AlwaysBuild('test.passed')
+test_env.Alias('test', 'test.passed')
+

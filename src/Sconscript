@@ -1,0 +1,3 @@
+Import('*')
+
+env.SharedLibrary('simpalg', Glob('*.c'))
