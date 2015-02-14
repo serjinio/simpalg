@@ -13,14 +13,14 @@
 
 #include <check.h>
 
-#include <hash_map.h>
+#include <map.h>
 #include <list.h>
 
 
 static char *
 rand_str(char *str, size_t length) {
   static int seed = 3457;
-  const char const *charset =
+  const char * const charset =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
 
   if (str == NULL)
@@ -45,47 +45,7 @@ rand_str_alloc(size_t length) {
   return length ? rand_str(malloc(sizeof(char) * length), length) : NULL;
 }
 
-
-START_TEST(test_hash_basic)
-{
-  struct sa_hash *hash = sa_hash_new();
-  char *val;
-  
-  printf("test add one...\n");
-  asprintf(&val, "%s", "sample value one");
-  sa_hash_add(hash, val);
-  ck_assert_int_eq(sa_hash_count(hash), 1);
-  ck_assert(sa_hash_contains(hash, val) == true);
-  ck_assert(sa_hash_contains(hash, "bad value") == false);
-
-  printf("adding 99 more...\n");
-  for (int i = 0; i < 99; i++) {
-    val = rand_str_alloc(50);
-    sa_hash_add(hash, val);
-  }
-  ck_assert(sa_hash_count(hash) == 100);
-}
-END_TEST
-
-START_TEST(test_hash_perf)
-{
-  struct sa_hash *hash = sa_hash_new();
-
-  char *val;
-
-  printf("test add many items...\n");
-  for (int i = 0; i < 10000; i++) {
-    val = rand_str_alloc(50);
-    sa_hash_add(hash, val);
-  }
-  printf("added all elements: %d\n", sa_hash_count(hash));
-  ck_assert(sa_hash_count(hash) == 10000);
-  printf("passed.\n");
-
-}
-END_TEST
-
-_Bool lst_equals_fn(sa_list_val val1, sa_list_val val2) {
+_Bool str_equals_fn(sa_list_value val1, sa_list_value val2) {
   if (strcmp((char *)val1, (char *)val2) == 0) {
     return true;
   } else {
@@ -93,8 +53,61 @@ _Bool lst_equals_fn(sa_list_val val1, sa_list_val val2) {
   }
 }
 
+unsigned int
+hash_string(sa_map_value val)
+{
+  unsigned char *str = (unsigned char *)val;
+  unsigned long hash = 5381;
+  int c;
+
+  while ((c = *str++))
+    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+  return hash;
+}
+
+
+START_TEST(test_map_basic)
+{
+  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  char *val;
+  
+  printf("test add one...\n");
+  asprintf(&val, "%s", "sample value one");
+  sa_map_put(map, val);
+  ck_assert_int_eq(sa_map_count(map), 1);
+  ck_assert(sa_map_contains(map, val) == true);
+  ck_assert(sa_map_contains(map, "bad value") == false);
+
+  printf("adding 99 more...\n");
+  for (int i = 0; i < 99; i++) {
+    val = rand_str_alloc(50);
+    sa_map_put(map, val);
+  }
+  ck_assert(sa_map_count(map) == 100);
+}
+END_TEST
+
+START_TEST(test_map_perf)
+{
+  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+
+  char *val;
+
+  printf("test add many items...\n");
+  for (int i = 0; i < 10000; i++) {
+    val = rand_str_alloc(50);
+    sa_map_put(map, val);
+  }
+  printf("added all elements: %d\n", sa_map_count(map));
+  ck_assert(sa_map_count(map) == 10000);
+  printf("passed.\n");
+
+}
+END_TEST
+
 START_TEST(test_list_basic) {
-  sa_list *lst = sa_list_new(lst_equals_fn);
+  sa_list *lst = sa_list_new(str_equals_fn);
   char *val1, *val2;
   
   asprintf(&val1, "%s", "sample value one");
@@ -129,8 +142,8 @@ Suite *hash_suite(void)
   /* Core test case */
   tc_core = tcase_create("Basic");
 
-  tcase_add_test(tc_core, test_hash_perf);
-  tcase_add_test(tc_core, test_hash_basic);
+  tcase_add_test(tc_core, test_map_perf);
+  tcase_add_test(tc_core, test_map_basic);
   suite_add_tcase(s, tc_core);
 
   return s;
