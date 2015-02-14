@@ -15,16 +15,12 @@
 #include "map.h"
 
 
-#define MAP_BINS_NO 5
+#define MAP_BINS_NO 50
 
 
 #define map_bin(map, bin_no) ((map)->store_lists[bin_no])
 #define value_bin(map, val) ((map)->hash_fn(val) % (map)->bins_no)
 
-
-/************************************************************
- Data structures & their functions
-************************************************************/
 
 struct sa_map *
 sa_map_new(sa_map_hash_fn hash_fn, sa_map_equals_fn equals_fn) {
@@ -66,6 +62,19 @@ sa_map_put(sa_map *map, sa_map_value value) {
   return 0;
 }
 
+sa_map_value
+sa_map_remove(sa_map *map, sa_map_value value) {
+  assert(map != NULL);
+
+  if (!sa_map_contains(map, value)) {
+    return NULL;
+  }
+
+  int bin_no = value_bin(map, value);
+  sa_list_node *node = sa_list_find(map_bin(map, bin_no), value);
+  return sa_list_remove(map_bin(map, bin_no), node);
+}
+
 _Bool
 sa_map_contains(sa_map *map, sa_map_value value) {
   int value_bin = value_bin(map, value);
@@ -100,3 +109,48 @@ sa_map_print_bin_lengths(struct sa_map *map) {
   }
 }
 
+
+/* map iterator */
+
+
+#define iter_terminated(iter) (iter->bin_no == iter->map->bins_no)
+
+
+sa_map_iterator *
+sa_map_iterator_new(sa_map *map) {
+  sa_map_iterator *iter = malloc(sizeof(sa_map_iterator));
+  *iter = (sa_map_iterator){.map = map, .bin_no = -1, .current = NULL};
+  return iter;
+}
+
+void
+sa_map_iterator_free(sa_map_iterator *iter) {
+  assert(iter != NULL);
+  free(iter);
+}
+
+sa_map_value
+sa_map_iterator_next(sa_map_iterator *iter) {
+  assert(iter != NULL);
+  
+  if (iter_terminated(iter)) {
+    return NULL;
+  }
+
+  if (iter->current != NULL) {
+    iter->current = sa_list_next(iter->current);
+  }
+
+  // if we got past the end of the current bin, then advance
+  while (iter->current == NULL && !iter_terminated(iter)) {
+    iter->bin_no += 1;
+    if (iter_terminated(iter)) {
+      return NULL;
+    }
+
+    iter->current = sa_list_head(map_bin(iter->map, iter->bin_no));
+  }
+  
+  return sa_list_value(iter->current);
+}
+  

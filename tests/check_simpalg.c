@@ -34,6 +34,7 @@ rand_str(char *str, size_t length) {
     str[i] = charset[key];
   }
   str[length] = '\0';
+    
   
   //printf("generated random string: %s\n", str);
   return str;
@@ -71,9 +72,9 @@ START_TEST(test_map_basic)
 {
   struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
   char *val;
+  asprintf(&val, "%s", "sample value one");
   
   printf("test add one...\n");
-  asprintf(&val, "%s", "sample value one");
   sa_map_put(map, val);
   ck_assert_int_eq(sa_map_count(map), 1);
   ck_assert(sa_map_contains(map, val) == true);
@@ -88,10 +89,43 @@ START_TEST(test_map_basic)
 }
 END_TEST
 
+START_TEST(test_map_remove) {
+  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  char *val;
+  asprintf(&val, "%s", "sample value");
+
+  sa_map_put(map, val);
+  ck_assert(sa_map_contains(map, val) == true);
+  sa_map_remove(map, val);
+  ck_assert(sa_map_contains(map, val) == false);
+  ck_assert(sa_map_count(map) == 0);
+}
+END_TEST
+
+START_TEST(test_map_iterate) {
+  sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  char *val;
+
+  for (int i = 0; i < 50; i++) {
+    val = rand_str_alloc(50);
+    sa_map_put(map, val);
+  }
+  sa_map_print_bin_lengths(map);
+  
+  int counter = 0;
+  sa_map_iterator *iter = sa_map_iterator_new(map);
+  sa_map_value map_val = NULL;
+  while ((map_val = sa_map_iterator_next(iter))) {
+    counter += 1;
+  }
+  sa_map_iterator_free(iter);
+  ck_assert(counter == 50);
+}
+END_TEST
+
 START_TEST(test_map_perf)
 {
   struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
-
   char *val;
 
   printf("test add many items...\n");
@@ -143,6 +177,8 @@ Suite *hash_suite(void)
   tc_core = tcase_create("Basic");
 
   tcase_add_test(tc_core, test_map_perf);
+  tcase_add_test(tc_core, test_map_remove);
+  tcase_add_test(tc_core, test_map_iterate);
   tcase_add_test(tc_core, test_map_basic);
   suite_add_tcase(s, tc_core);
 
