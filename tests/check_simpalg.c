@@ -15,6 +15,7 @@
 
 #include <map.h>
 #include <list.h>
+#include <vector.h>
 
 
 static char *
@@ -110,7 +111,6 @@ START_TEST(test_map_iterate) {
     val = rand_str_alloc(50);
     sa_map_put(map, val);
   }
-  sa_map_print_bin_lengths(map);
   
   int counter = 0;
   sa_map_iterator *iter = sa_map_iterator_new(map);
@@ -166,6 +166,13 @@ START_TEST(test_list_basic) {
 }
 END_TEST
 
+START_TEST(test_vector_constructor) {
+  sa_vector *vec = sa_vector_new(NULL);
+  ck_assert(sa_vector_length(vec) == 0);
+  sa_vector_free(vec);
+}
+END_TEST
+
 Suite *hash_suite(void)
 {
   Suite *s;
@@ -200,6 +207,22 @@ Suite *list_suite(void) {
   return s;
 }
 
+Suite *vector_suite(void)
+{
+  Suite *s;
+  TCase *tc_core;
+
+  s = suite_create("Vector");
+
+  /* Core test case */
+  tc_core = tcase_create("Basic");
+
+  tcase_add_test(tc_core, test_vector_constructor);
+  suite_add_tcase(s, tc_core);
+  
+  return s;
+}
+
 int run_suite(Suite *suite) {
   int number_failed;
   SRunner *sr_suite = srunner_create(suite);
@@ -212,13 +235,16 @@ int run_suite(Suite *suite) {
 int main(void)
 {
   int number_failed = 0;
-  Suite *hash_map, *list;
+  Suite *hash_map, *list, *vect;
 
   hash_map = hash_suite();
   number_failed += run_suite(hash_map);
 
   list = list_suite();
   number_failed += run_suite(list);
+
+  vect = vector_suite();
+  number_failed += run_suite(vect);
   
   return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

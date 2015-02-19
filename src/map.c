@@ -113,7 +113,7 @@ sa_map_print_bin_lengths(struct sa_map *map) {
 /* map iterator */
 
 
-#define iter_terminated(iter) (iter->bin_no == iter->map->bins_no)
+#define iter_terminated(iter) ((iter)->bin_no == (iter)->map->bins_no)
 
 
 sa_map_iterator *
