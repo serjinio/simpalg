@@ -69,53 +69,53 @@ hash_string(sa_set_value val)
 }
 
 
-START_TEST(test_map_basic)
+START_TEST(test_set_basic)
 {
-  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
+  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value one");
   
   printf("test add one...\n");
-  sa_set_put(map, val);
-  ck_assert_int_eq(sa_set_count(map), 1);
-  ck_assert(sa_set_contains(map, val) == true);
-  ck_assert(sa_set_contains(map, "bad value") == false);
+  sa_set_put(set, val);
+  ck_assert_int_eq(sa_set_count(set), 1);
+  ck_assert(sa_set_contains(set, val) == true);
+  ck_assert(sa_set_contains(set, "bad value") == false);
 
   printf("adding 99 more...\n");
   for (int i = 0; i < 99; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(map, val);
+    sa_set_put(set, val);
   }
-  ck_assert(sa_set_count(map) == 100);
+  ck_assert(sa_set_count(set) == 100);
 }
 END_TEST
 
-START_TEST(test_map_remove) {
-  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
+START_TEST(test_set_remove) {
+  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value");
 
-  sa_set_put(map, val);
-  ck_assert(sa_set_contains(map, val) == true);
-  sa_set_remove(map, val);
-  ck_assert(sa_set_contains(map, val) == false);
-  ck_assert(sa_set_count(map) == 0);
+  sa_set_put(set, val);
+  ck_assert(sa_set_contains(set, val) == true);
+  sa_set_remove(set, val);
+  ck_assert(sa_set_contains(set, val) == false);
+  ck_assert(sa_set_count(set) == 0);
 }
 END_TEST
 
-START_TEST(test_map_iterate) {
-  sa_set *map = sa_set_new(hash_string, str_equals_fn);
+START_TEST(test_set_iterate) {
+  sa_set *set = sa_set_new(hash_string, str_equals_fn);
   char *val;
 
   for (int i = 0; i < 50; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(map, val);
+    sa_set_put(set, val);
   }
   
   int counter = 0;
-  sa_set_iterator *iter = sa_set_iterator_new(map);
-  sa_set_value map_val = NULL;
-  while ((map_val = sa_set_iterator_next(iter))) {
+  sa_set_iterator *iter = sa_set_iterator_new(set);
+  sa_set_value set_val = NULL;
+  while ((set_val = sa_set_iterator_next(iter))) {
     counter += 1;
   }
   sa_set_iterator_free(iter);
@@ -123,18 +123,18 @@ START_TEST(test_map_iterate) {
 }
 END_TEST
 
-START_TEST(test_map_perf)
+START_TEST(test_set_perf)
 {
-  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
+  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
   char *val;
 
   printf("test add many items...\n");
   for (int i = 0; i < 10000; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(map, val);
+    sa_set_put(set, val);
   }
-  printf("added all elements: %d\n", sa_set_count(map));
-  ck_assert(sa_set_count(map) == 10000);
+  printf("added all elements: %d\n", sa_set_count(set));
+  ck_assert(sa_set_count(set) == 10000);
   printf("passed.\n");
 
 }
@@ -178,15 +178,15 @@ Suite *hash_suite(void)
   Suite *s;
   TCase *tc_core;
 
-  s = suite_create("Hash");
+  s = suite_create("Hash Set");
 
   /* Core test case */
   tc_core = tcase_create("Basic");
 
-  tcase_add_test(tc_core, test_map_perf);
-  tcase_add_test(tc_core, test_map_remove);
-  tcase_add_test(tc_core, test_map_iterate);
-  tcase_add_test(tc_core, test_map_basic);
+  tcase_add_test(tc_core, test_set_perf);
+  tcase_add_test(tc_core, test_set_remove);
+  tcase_add_test(tc_core, test_set_iterate);
+  tcase_add_test(tc_core, test_set_basic);
   suite_add_tcase(s, tc_core);
 
   return s;
@@ -235,10 +235,10 @@ int run_suite(Suite *suite) {
 int main(void)
 {
   int number_failed = 0;
-  Suite *hash_map, *list, *vect;
+  Suite *hash_set, *list, *vect;
 
-  hash_map = hash_suite();
-  number_failed += run_suite(hash_map);
+  hash_set = hash_suite();
+  number_failed += run_suite(hash_set);
 
   list = list_suite();
   number_failed += run_suite(list);
