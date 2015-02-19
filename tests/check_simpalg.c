@@ -13,7 +13,7 @@
 
 #include <check.h>
 
-#include <map.h>
+#include <set.h>
 #include <list.h>
 #include <vector.h>
 
@@ -56,7 +56,7 @@ _Bool str_equals_fn(sa_list_value val1, sa_list_value val2) {
 }
 
 unsigned int
-hash_string(sa_map_value val)
+hash_string(sa_set_value val)
 {
   unsigned char *str = (unsigned char *)val;
   unsigned long hash = 5381;
@@ -71,70 +71,70 @@ hash_string(sa_map_value val)
 
 START_TEST(test_map_basic)
 {
-  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value one");
   
   printf("test add one...\n");
-  sa_map_put(map, val);
-  ck_assert_int_eq(sa_map_count(map), 1);
-  ck_assert(sa_map_contains(map, val) == true);
-  ck_assert(sa_map_contains(map, "bad value") == false);
+  sa_set_put(map, val);
+  ck_assert_int_eq(sa_set_count(map), 1);
+  ck_assert(sa_set_contains(map, val) == true);
+  ck_assert(sa_set_contains(map, "bad value") == false);
 
   printf("adding 99 more...\n");
   for (int i = 0; i < 99; i++) {
     val = rand_str_alloc(50);
-    sa_map_put(map, val);
+    sa_set_put(map, val);
   }
-  ck_assert(sa_map_count(map) == 100);
+  ck_assert(sa_set_count(map) == 100);
 }
 END_TEST
 
 START_TEST(test_map_remove) {
-  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value");
 
-  sa_map_put(map, val);
-  ck_assert(sa_map_contains(map, val) == true);
-  sa_map_remove(map, val);
-  ck_assert(sa_map_contains(map, val) == false);
-  ck_assert(sa_map_count(map) == 0);
+  sa_set_put(map, val);
+  ck_assert(sa_set_contains(map, val) == true);
+  sa_set_remove(map, val);
+  ck_assert(sa_set_contains(map, val) == false);
+  ck_assert(sa_set_count(map) == 0);
 }
 END_TEST
 
 START_TEST(test_map_iterate) {
-  sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  sa_set *map = sa_set_new(hash_string, str_equals_fn);
   char *val;
 
   for (int i = 0; i < 50; i++) {
     val = rand_str_alloc(50);
-    sa_map_put(map, val);
+    sa_set_put(map, val);
   }
   
   int counter = 0;
-  sa_map_iterator *iter = sa_map_iterator_new(map);
-  sa_map_value map_val = NULL;
-  while ((map_val = sa_map_iterator_next(iter))) {
+  sa_set_iterator *iter = sa_set_iterator_new(map);
+  sa_set_value map_val = NULL;
+  while ((map_val = sa_set_iterator_next(iter))) {
     counter += 1;
   }
-  sa_map_iterator_free(iter);
+  sa_set_iterator_free(iter);
   ck_assert(counter == 50);
 }
 END_TEST
 
 START_TEST(test_map_perf)
 {
-  struct sa_map *map = sa_map_new(hash_string, str_equals_fn);
+  struct sa_set *map = sa_set_new(hash_string, str_equals_fn);
   char *val;
 
   printf("test add many items...\n");
   for (int i = 0; i < 10000; i++) {
     val = rand_str_alloc(50);
-    sa_map_put(map, val);
+    sa_set_put(map, val);
   }
-  printf("added all elements: %d\n", sa_map_count(map));
-  ck_assert(sa_map_count(map) == 10000);
+  printf("added all elements: %d\n", sa_set_count(map));
+  ck_assert(sa_set_count(map) == 10000);
   printf("passed.\n");
 
 }

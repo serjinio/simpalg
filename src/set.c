@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include "list.h"
-#include "map.h"
+#include "set.h"
 
 
 #define MAP_BINS_NO 50
@@ -22,12 +22,12 @@
 #define value_bin(map, val) ((map)->hash_fn(val) % (map)->bins_no)
 
 
-struct sa_map *
-sa_map_new(sa_map_hash_fn hash_fn, sa_map_equals_fn equals_fn) {
+sa_set *
+sa_set_new(sa_set_hash_fn hash_fn, sa_set_equals_fn equals_fn) {
   assert(hash_fn != NULL && equals_fn != NULL);
   
-  sa_map *map = malloc(sizeof(sa_map));
-  *map = (sa_map){.bins_no = MAP_BINS_NO,
+  sa_set *map = malloc(sizeof(sa_set));
+  *map = (sa_set){.bins_no = MAP_BINS_NO,
 		  .equals_fn = equals_fn,
 		  .hash_fn = hash_fn};
   
@@ -41,7 +41,7 @@ sa_map_new(sa_map_hash_fn hash_fn, sa_map_equals_fn equals_fn) {
 }
 
 void
-sa_map_free(sa_map *map) {
+sa_set_free(sa_set *map) {
   assert(map != NULL);
   for (int i = 0; i < map->bins_no; i++) {
     sa_list *lst = map_bin(map, i);
@@ -52,8 +52,8 @@ sa_map_free(sa_map *map) {
 }
 
 int
-sa_map_put(sa_map *map, sa_map_value value) {
-  if (sa_map_contains(map, value)) {
+sa_set_put(sa_set *map, sa_set_value value) {
+  if (sa_set_contains(map, value)) {
     return -2;
   }
   int value_bin = value_bin(map, value);
@@ -62,11 +62,11 @@ sa_map_put(sa_map *map, sa_map_value value) {
   return 0;
 }
 
-sa_map_value
-sa_map_remove(sa_map *map, sa_map_value value) {
+sa_set_value
+sa_set_remove(sa_set *map, sa_set_value value) {
   assert(map != NULL);
 
-  if (!sa_map_contains(map, value)) {
+  if (!sa_set_contains(map, value)) {
     return NULL;
   }
 
@@ -76,7 +76,7 @@ sa_map_remove(sa_map *map, sa_map_value value) {
 }
 
 _Bool
-sa_map_contains(sa_map *map, sa_map_value value) {
+sa_set_contains(sa_set *map, sa_set_value value) {
   int value_bin = value_bin(map, value);
   assert(value_bin < MAP_BINS_NO);
   return sa_list_contains(map_bin(map, value_bin),
@@ -84,7 +84,7 @@ sa_map_contains(sa_map *map, sa_map_value value) {
 }
 
 int
-sa_map_count(sa_map *map) {
+sa_set_count(sa_set *map) {
   int count = 0;
   for (int i = 0; i < map->bins_no; i++) {
     count += sa_list_length(map_bin(map, i));
@@ -93,7 +93,7 @@ sa_map_count(sa_map *map) {
 }
 
 void
-sa_map_print(struct sa_map *map) {
+sa_set_print(struct sa_set *map) {
   printf("printing map contents. map bins no.: %d\n", map->bins_no);
   for (int i = 0; i < map->bins_no; i++) {
     printf("contents of bin no.: %d\n:", i);
@@ -102,7 +102,7 @@ sa_map_print(struct sa_map *map) {
 }
 
 void
-sa_map_print_bin_lengths(struct sa_map *map) {
+sa_set_print_bin_lengths(struct sa_set *map) {
   for (int i = 0; i < map->bins_no; i++) {
     struct sa_list *lst = map_bin(map, i);
     printf("bin # %d length: %lu\n", i, sa_list_length(lst));
@@ -116,21 +116,21 @@ sa_map_print_bin_lengths(struct sa_map *map) {
 #define iter_terminated(iter) ((iter)->bin_no == (iter)->map->bins_no)
 
 
-sa_map_iterator *
-sa_map_iterator_new(sa_map *map) {
-  sa_map_iterator *iter = malloc(sizeof(sa_map_iterator));
-  *iter = (sa_map_iterator){.map = map, .bin_no = -1, .current = NULL};
+sa_set_iterator *
+sa_set_iterator_new(sa_set *map) {
+  sa_set_iterator *iter = malloc(sizeof(sa_set_iterator));
+  *iter = (sa_set_iterator){.map = map, .bin_no = -1, .current = NULL};
   return iter;
 }
 
 void
-sa_map_iterator_free(sa_map_iterator *iter) {
+sa_set_iterator_free(sa_set_iterator *iter) {
   assert(iter != NULL);
   free(iter);
 }
 
-sa_map_value
-sa_map_iterator_next(sa_map_iterator *iter) {
+sa_set_value
+sa_set_iterator_next(sa_set_iterator *iter) {
   assert(iter != NULL);
   
   if (iter_terminated(iter)) {
