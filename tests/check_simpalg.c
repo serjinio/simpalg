@@ -173,6 +173,33 @@ START_TEST(test_vector_constructor) {
 }
 END_TEST
 
+START_TEST(test_vector_add) {
+  sa_vector *vec = sa_vector_new(NULL);
+
+  for (int i = 0; i < 50; i++) {
+    int *value = malloc(sizeof(int));
+    *value = i;
+    int rc = sa_vector_add(vec, value);
+    ck_assert(rc == 0);
+  }
+  printf("vector length: %d\n", sa_vector_length(vec));
+  ck_assert(sa_vector_length(vec) == 50);
+  
+  for (int i = 0; i < 50; i++) {
+    int *pint = sa_vector_nth(vec, i);
+    ck_assert(*pint == i);
+  }
+  
+  for (int i = 49; i > -1; i--) {
+    int *pint = sa_vector_remove_nth(vec, i);
+    free(pint);
+  }
+  ck_assert(sa_vector_length(vec) == 0);
+  
+  sa_vector_free(vec);
+}
+END_TEST
+
 Suite *hash_suite(void)
 {
   Suite *s;
@@ -218,6 +245,7 @@ Suite *vector_suite(void)
   tc_core = tcase_create("Basic");
 
   tcase_add_test(tc_core, test_vector_constructor);
+  tcase_add_test(tc_core, test_vector_add);
   suite_add_tcase(s, tc_core);
   
   return s;
