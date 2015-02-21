@@ -26,12 +26,12 @@ sa_vector *sa_vector_new(sa_vector_equals_fn equals_fn);
 void sa_vector_free(sa_vector *vector);
 
 int sa_vector_add(sa_vector *vector, sa_vector_value value);
-sa_vector_value sa_vector_remove_nth(sa_vector *vector, unsigned int index);
-sa_vector_value sa_vector_nth(sa_vector *vector, unsigned int n);
+int sa_vector_nth(sa_vector *vector, unsigned int n, sa_vector_value *pvalue);
+int sa_vector_remove_nth(sa_vector *vector, unsigned int n,
+			 sa_vector_value *pvalue);
 
 /* functions requiring equals_fn to be set in sa_vector_new */
-_Bool sa_vector_remove_value(sa_vector *vector, sa_vector_value value);
-unsigned int sa_vector_indexof(sa_vector *vector, sa_vector_value);
+long sa_vector_indexof(sa_vector *vector, sa_vector_value value);
 
 #define sa_vector_length(vector) ((vector)->length)
 #define sa_vector_capacity(vector) ((vector)->capacity)

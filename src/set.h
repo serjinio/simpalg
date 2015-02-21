@@ -23,17 +23,16 @@ typedef struct sa_set {
   sa_set_equals_fn equals_fn;
 } sa_set;
 
-/* sa_set */
   
 sa_set *sa_set_new(sa_set_hash_fn hash_fn, sa_set_equals_fn equals_fn);
 void sa_set_free(sa_set *set);
 
 _Bool sa_set_contains(sa_set *set, sa_set_value value);
-int sa_set_put(sa_set *set, sa_set_value value);
+int sa_set_add(sa_set *set, sa_set_value value);
 sa_set_value sa_set_remove(sa_set *set, sa_set_value value);
 int sa_set_count(sa_set *set);
 
-/** debugging stuff **/
+/* debugging stuff */
 void sa_set_print(sa_set *set);
 void sa_set_print_bin_lengths(sa_set *set);
 

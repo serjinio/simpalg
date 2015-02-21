@@ -1,5 +1,5 @@
 /**
-   Sample of a map store
+   Sample of a set container
 **/
 
 #define _GNU_SOURCE
@@ -52,9 +52,9 @@ sa_set_free(sa_set *set) {
 }
 
 int
-sa_set_put(sa_set *set, sa_set_value value) {
+sa_set_add(sa_set *set, sa_set_value value) {
   if (sa_set_contains(set, value)) {
-    return -2;
+    return 2;
   }
   int value_bin = value_bin(set, value);
   assert(value_bin < SET_BINS_NO);
@@ -91,6 +91,9 @@ sa_set_count(sa_set *set) {
   }
   return count;
 }
+
+
+/* debugging functions */
 
 void
 sa_set_print(struct sa_set *set) {
