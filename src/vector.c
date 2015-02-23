@@ -79,7 +79,13 @@ sa_vector_nth(sa_vector *vector, unsigned int n, sa_vector_value *pvalue) {
   *pvalue = *(vector->store + n);
   return 0;
 }
-	      
+
+int sa_vector_set_nth(sa_vector *vector, unsigned int n, sa_vector_value pvalue) {
+  assert(vector != NULL && n < sa_vector_length(vector));
+  vector->store[n] = pvalue;
+  return 0;
+}
+
 int
 sa_vector_remove_nth(sa_vector *vector, unsigned int n,
 		     sa_vector_value *pvalue) {
@@ -130,4 +136,16 @@ sa_vector_indexof(sa_vector *vector, sa_vector_value value) {
   } else {
     return -1;
   }
+}
+
+int
+sa_vector_swap(sa_vector *vector, unsigned int n, unsigned int k) {
+  assert(vector != NULL && n < sa_vector_length(vector) &&
+	 k < sa_vector_length(vector));
+
+  sa_vector_value tmp = vector->store[n];
+  vector->store[n] = vector->store[k];
+  vector->store[k] = tmp;
+  
+  return 0;
 }

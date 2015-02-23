@@ -209,7 +209,7 @@ Suite *hash_suite(void)
   Suite *s;
   TCase *tc_core;
 
-  s = suite_create("Hash Htbl");
+  s = suite_create("Htbl");
 
   /* Core test case */
   tc_core = tcase_create("Basic");

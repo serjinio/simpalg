@@ -27,6 +27,7 @@ void sa_vector_free(sa_vector *vector);
 
 int sa_vector_add(sa_vector *vector, sa_vector_value value);
 int sa_vector_nth(sa_vector *vector, unsigned int n, sa_vector_value *pvalue);
+int sa_vector_set_nth(sa_vector *vector, unsigned int n, sa_vector_value pvalue);
 int sa_vector_remove_nth(sa_vector *vector, unsigned int n,
 			 sa_vector_value *pvalue);
 
