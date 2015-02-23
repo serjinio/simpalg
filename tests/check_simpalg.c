@@ -13,7 +13,7 @@
 
 #include <check.h>
 
-#include <set.h>
+#include <htbl.h>
 #include <list.h>
 #include <vector.h>
 
@@ -56,7 +56,7 @@ _Bool str_equals_fn(sa_list_value val1, sa_list_value val2) {
 }
 
 unsigned int
-hash_string(sa_set_value val)
+hash_string(sa_htbl_value val)
 {
   unsigned char *str = (unsigned char *)val;
   unsigned long hash = 5381;
@@ -69,72 +69,72 @@ hash_string(sa_set_value val)
 }
 
 
-START_TEST(test_set_basic)
+START_TEST(test_htbl_basic)
 {
-  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
+  struct sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value one");
   
   printf("test add one...\n");
-  sa_set_put(set, val);
-  ck_assert_int_eq(sa_set_count(set), 1);
-  ck_assert(sa_set_contains(set, val) == true);
-  ck_assert(sa_set_contains(set, "bad value") == false);
+  sa_htbl_add(htbl, val);
+  ck_assert_int_eq(sa_htbl_count(htbl), 1);
+  ck_assert(sa_htbl_contains(htbl, val) == true);
+  ck_assert(sa_htbl_contains(htbl, "bad value") == false);
 
   printf("adding 99 more...\n");
   for (int i = 0; i < 99; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(set, val);
+    sa_htbl_add(htbl, val);
   }
-  ck_assert(sa_set_count(set) == 100);
+  ck_assert(sa_htbl_count(htbl) == 100);
 }
 END_TEST
 
-START_TEST(test_set_remove) {
-  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
+START_TEST(test_htbl_remove) {
+  struct sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
   char *val;
   asprintf(&val, "%s", "sample value");
 
-  sa_set_put(set, val);
-  ck_assert(sa_set_contains(set, val) == true);
-  sa_set_remove(set, val);
-  ck_assert(sa_set_contains(set, val) == false);
-  ck_assert(sa_set_count(set) == 0);
+  sa_htbl_add(htbl, val);
+  ck_assert(sa_htbl_contains(htbl, val) == true);
+  sa_htbl_remove(htbl, val);
+  ck_assert(sa_htbl_contains(htbl, val) == false);
+  ck_assert(sa_htbl_count(htbl) == 0);
 }
 END_TEST
 
-START_TEST(test_set_iterate) {
-  sa_set *set = sa_set_new(hash_string, str_equals_fn);
+START_TEST(test_htbl_iterate) {
+  sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
   char *val;
 
   for (int i = 0; i < 50; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(set, val);
+    sa_htbl_add(htbl, val);
   }
   
   int counter = 0;
-  sa_set_iterator *iter = sa_set_iterator_new(set);
-  sa_set_value set_val = NULL;
-  while ((set_val = sa_set_iterator_next(iter))) {
+  sa_htbl_iterator *iter = sa_htbl_iterator_new(htbl);
+  sa_htbl_value htbl_val = NULL;
+  while ((htbl_val = sa_htbl_iterator_next(iter))) {
     counter += 1;
   }
-  sa_set_iterator_free(iter);
+  sa_htbl_iterator_free(iter);
   ck_assert(counter == 50);
 }
 END_TEST
 
-START_TEST(test_set_perf)
+START_TEST(test_htbl_perf)
 {
-  struct sa_set *set = sa_set_new(hash_string, str_equals_fn);
+  struct sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
   char *val;
 
   printf("test add many items...\n");
   for (int i = 0; i < 10000; i++) {
     val = rand_str_alloc(50);
-    sa_set_put(set, val);
+    sa_htbl_add(htbl, val);
   }
-  printf("added all elements: %d\n", sa_set_count(set));
-  ck_assert(sa_set_count(set) == 10000);
+  printf("added all elements: %d\n", sa_htbl_count(htbl));
+  ck_assert(sa_htbl_count(htbl) == 10000);
   printf("passed.\n");
 
 }
@@ -175,24 +175,28 @@ END_TEST
 
 START_TEST(test_vector_add) {
   sa_vector *vec = sa_vector_new(NULL);
-
+  int *vect_value;
+  
   for (int i = 0; i < 50; i++) {
     int *value = malloc(sizeof(int));
     *value = i;
-    int rc = sa_vector_add(vec, value);
-    ck_assert(rc == 0);
+    ck_assert(sa_vector_add(vec, value) == 0);
   }
-  printf("vector length: %d\n", sa_vector_length(vec));
   ck_assert(sa_vector_length(vec) == 50);
   
   for (int i = 0; i < 50; i++) {
-    int *pint = sa_vector_nth(vec, i);
-    ck_assert(*pint == i);
+    ck_assert(sa_vector_nth(vec, i, (sa_vector_value *)(&vect_value)) == 0);
+    ck_assert(*vect_value == i);
   }
-  
-  for (int i = 49; i > -1; i--) {
-    int *pint = sa_vector_remove_nth(vec, i);
-    free(pint);
+
+  for (int i = 0; i < 50; i++) {
+    int rc = sa_vector_remove_nth(vec, 0, (sa_vector_value *)(&vect_value));
+    ck_assert(rc == 0);
+    free(vect_value);
+    if (i < 49) {
+      ck_assert(sa_vector_nth(vec, 0, (sa_vector_value *)(&vect_value)) == 0);
+      ck_assert(*vect_value == i + 1);
+    }
   }
   ck_assert(sa_vector_length(vec) == 0);
   
@@ -205,15 +209,15 @@ Suite *hash_suite(void)
   Suite *s;
   TCase *tc_core;
 
-  s = suite_create("Hash Set");
+  s = suite_create("Hash Htbl");
 
   /* Core test case */
   tc_core = tcase_create("Basic");
 
-  tcase_add_test(tc_core, test_set_perf);
-  tcase_add_test(tc_core, test_set_remove);
-  tcase_add_test(tc_core, test_set_iterate);
-  tcase_add_test(tc_core, test_set_basic);
+  tcase_add_test(tc_core, test_htbl_perf);
+  tcase_add_test(tc_core, test_htbl_remove);
+  tcase_add_test(tc_core, test_htbl_iterate);
+  tcase_add_test(tc_core, test_htbl_basic);
   suite_add_tcase(s, tc_core);
 
   return s;
@@ -263,10 +267,10 @@ int run_suite(Suite *suite) {
 int main(void)
 {
   int number_failed = 0;
-  Suite *hash_set, *list, *vect;
+  Suite *htbl, *list, *vect;
 
-  hash_set = hash_suite();
-  number_failed += run_suite(hash_set);
+  htbl = hash_suite();
+  number_failed += run_suite(htbl);
 
   list = list_suite();
   number_failed += run_suite(list);
