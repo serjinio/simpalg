@@ -13,9 +13,10 @@
 
 #include <check.h>
 
-#include <htbl.h>
-#include <list.h>
-#include <vector.h>
+#include "htbl.h"
+#include "list.h"
+#include "vector.h"
+#include "heap.h"
 
 
 static char *
@@ -204,6 +205,36 @@ START_TEST(test_vector_add) {
 }
 END_TEST
 
+static int compare_ints(sa_heap_value val1, sa_heap_value val2) {
+  int ival1 = *((int *)val1);
+  int ival2 = *((int *)val2);
+  if (ival1 > ival2) {
+    return 1;
+  } else if (ival1 < ival2) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+START_TEST(test_heap_put) {
+  sa_heap *heap = sa_heap_new(compare_ints);
+  
+  for (int i = 0; i < 100; i++) {
+    int *heap_val = malloc(sizeof(int));
+    *heap_val = i;
+    ck_assert(sa_heap_put(heap, heap_val) == 0);
+  }
+  ck_assert(sa_heap_size(heap) == 100);
+
+  for (int i = 99; i > -1; i--) {
+    int *heap_val;
+    ck_assert(sa_heap_extract(heap, (sa_heap_value *)&heap_val) == 0);
+    ck_assert(*heap_val == i);
+  }
+}
+END_TEST
+
 Suite *hash_suite(void)
 {
   Suite *s;
@@ -255,6 +286,22 @@ Suite *vector_suite(void)
   return s;
 }
 
+Suite *heap_suite(void)
+{
+  Suite *s;
+  TCase *tc_core;
+
+  s = suite_create("Heap");
+
+  /* Core test case */
+  tc_core = tcase_create("Basic");
+
+  tcase_add_test(tc_core, test_heap_put);
+  suite_add_tcase(s, tc_core);
+  
+  return s;
+}
+
 int run_suite(Suite *suite) {
   int number_failed;
   SRunner *sr_suite = srunner_create(suite);
@@ -267,7 +314,7 @@ int run_suite(Suite *suite) {
 int main(void)
 {
   int number_failed = 0;
-  Suite *htbl, *list, *vect;
+  Suite *htbl, *list, *vect, *heap;
 
   htbl = hash_suite();
   number_failed += run_suite(htbl);
@@ -277,6 +324,9 @@ int main(void)
 
   vect = vector_suite();
   number_failed += run_suite(vect);
-  
+
+  heap = heap_suite();
+  number_failed += run_suite(heap);
+
   return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -30,6 +30,7 @@ int sa_vector_nth(sa_vector *vector, unsigned int n, sa_vector_value *pvalue);
 int sa_vector_set_nth(sa_vector *vector, unsigned int n, sa_vector_value pvalue);
 int sa_vector_remove_nth(sa_vector *vector, unsigned int n,
 			 sa_vector_value *pvalue);
+int sa_vector_swap(sa_vector *vector, unsigned int n, unsigned int k);
 
 /* functions requiring equals_fn to be set in sa_vector_new */
 long sa_vector_indexof(sa_vector *vector, sa_vector_value value);
