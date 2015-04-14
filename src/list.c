@@ -47,8 +47,6 @@ is_node_in_list(sa_list_node *node, sa_list *lst) {
 
 sa_list *
 sa_list_new(sa_list_equals_fn equals_fn) {
-  assert(equals_fn != NULL);
-  
   sa_list *lst = malloc(sizeof(sa_list));
   *lst = (sa_list){.head = NULL, .tail = NULL, .length = 0,
 		    .equals_fn = equals_fn};
@@ -111,7 +109,11 @@ sa_list_append(sa_list *lst, sa_list_value value) {
  
 sa_list_node *
 sa_list_find(sa_list *lst, sa_list_value val) {
-  assert(lst != NULL && lst->equals_fn != NULL);
+  assert(lst != NULL);
+  if (lst->equals_fn == NULL) {
+    // in case we do not have equals fn just return NULL
+    return NULL;
+  }
   
   sa_list_node *lst_node = sa_list_head(lst);
   while (lst_node != NULL) {

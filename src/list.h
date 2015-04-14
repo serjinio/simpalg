@@ -30,12 +30,20 @@ typedef struct sa_list {
 } sa_list;
 
 
+/**
+   Constructs new list.
+   In case equals_fn is NULL sa_list_find will always return NULL.
+**/
 sa_list *sa_list_new(sa_list_equals_fn equals_fn);
 void sa_list_free(sa_list *lst);
 
 int sa_list_prepend(sa_list *lst, sa_list_value value);
 int sa_list_append(sa_list *lst, sa_list_value value);
 
+/**
+   Looks up an element in the list using equals_fn passed
+   to sa_list_new. If equals_fn is NULL - just returns NULL.
+**/
 sa_list_node *sa_list_find(sa_list *lst, sa_list_value val);
 sa_list_value sa_list_remove(sa_list *lst, sa_list_node *node);
 

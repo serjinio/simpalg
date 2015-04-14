@@ -14,6 +14,7 @@
 #include <check.h>
 
 #include "htbl.h"
+#include "hmap.h"
 #include "list.h"
 #include "vector.h"
 #include "heap.h"
@@ -126,7 +127,7 @@ END_TEST
 
 START_TEST(test_htbl_perf)
 {
-  struct sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
+  sa_htbl *htbl = sa_htbl_new(hash_string, str_equals_fn);
   char *val;
 
   printf("test add many items...\n");
@@ -140,6 +141,46 @@ START_TEST(test_htbl_perf)
 
 }
 END_TEST
+
+
+unsigned int
+hmap_hash_string(sa_hmap_key val)
+{
+  unsigned char *str = (unsigned char *)val;
+  unsigned long hash = 5381;
+  int c;
+
+  while ((c = *str++))
+    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+  return hash;
+}
+
+
+START_TEST(test_hmap_basic)
+{
+  struct sa_hmap *hmap = sa_hmap_new(hmap_hash_string, str_equals_fn);
+  char *val, *key;
+  asprintf(&val, "%s", "sample value one");
+  asprintf(&key, "%s", "sample key one");
+  
+  printf("test add one...\n");
+  sa_hmap_add(hmap, key, val);
+  ck_assert_int_eq(sa_hmap_count(hmap), 1);
+  ck_assert(sa_hmap_contains(hmap, key) == true);
+  ck_assert(sa_hmap_contains(hmap, "bad value") == false);
+
+  printf("adding 99 more...\n");
+  for (int i = 0; i < 99; i++) {
+    key = rand_str_alloc(50);
+    val = rand_str_alloc(50);
+    sa_hmap_add(hmap, key, val);
+    ck_assert(sa_hmap_contains(hmap, key) == true);
+  }
+  ck_assert(sa_hmap_count(hmap) == 100);
+}
+END_TEST
+
 
 START_TEST(test_list_basic) {
   sa_list *lst = sa_list_new(str_equals_fn);
@@ -254,6 +295,25 @@ Suite *hash_suite(void)
   return s;
 }
 
+Suite *hmap_suite(void)
+{
+  Suite *s;
+  TCase *tc_core;
+
+  s = suite_create("HMap");
+
+  /* Core test case */
+  tc_core = tcase_create("Basic");
+
+  /* tcase_add_test(tc_core, test_hmap_perf); */
+  /* tcase_add_test(tc_core, test_hmap_remove); */
+  /* tcase_add_test(tc_core, test_htbl_iterate); */
+  tcase_add_test(tc_core, test_hmap_basic);
+  suite_add_tcase(s, tc_core);
+
+  return s;
+}
+
 Suite *list_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -314,7 +374,10 @@ int run_suite(Suite *suite) {
 int main(void)
 {
   int number_failed = 0;
-  Suite *htbl, *list, *vect, *heap;
+  Suite *htbl, *hmap, *list, *vect, *heap;
+
+  hmap = hmap_suite();
+  number_failed += run_suite(hmap);
 
   htbl = hash_suite();
   number_failed += run_suite(htbl);
