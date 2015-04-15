@@ -115,12 +115,12 @@ START_TEST(test_htbl_iterate) {
   }
   
   int counter = 0;
-  sa_htbl_iterator *iter = sa_htbl_iterator_new(htbl);
+  sa_htbl_iter *iter = sa_htbl_iter_new(htbl);
   sa_htbl_value htbl_val = NULL;
-  while ((htbl_val = sa_htbl_iterator_next(iter))) {
+  while ((htbl_val = sa_htbl_iter_next(iter))) {
     counter += 1;
   }
-  sa_htbl_iterator_free(iter);
+  sa_htbl_iter_free(iter);
   ck_assert(counter == 50);
 }
 END_TEST
@@ -305,9 +305,6 @@ Suite *hmap_suite(void)
   /* Core test case */
   tc_core = tcase_create("Basic");
 
-  /* tcase_add_test(tc_core, test_hmap_perf); */
-  /* tcase_add_test(tc_core, test_hmap_remove); */
-  /* tcase_add_test(tc_core, test_htbl_iterate); */
   tcase_add_test(tc_core, test_hmap_basic);
   suite_add_tcase(s, tc_core);
 

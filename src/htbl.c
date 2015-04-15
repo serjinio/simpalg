@@ -32,8 +32,8 @@ sa_htbl_remove(sa_htbl *htbl, sa_htbl_value value) {
 /* iterator */
 
 sa_htbl_value *
-sa_htbl_iterator_next(sa_htbl_iterator *iter) {
-  sa_hmap_keyval *keyval = sa_hmap_iterator_next(iter);
+sa_htbl_iter_next(sa_htbl_iter *iter) {
+  sa_hmap_keyval *keyval = sa_hmap_iter_next(iter);
   if (keyval == NULL) {
     return NULL;
   }

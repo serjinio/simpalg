@@ -50,7 +50,7 @@ sa_hmap_list_find(sa_list *lst, sa_hmap_equals_fn equals_fn,
   return NULL;
 }
 
-#define sa_hmap_list_contains(lst, equals_fn, key)		\
+#define sa_hmap_list_contains(lst, equals_fn, key) \
   (sa_hmap_list_find((lst), (equals_fn), (key)) != NULL)
 
 /* Public interface */
@@ -85,14 +85,18 @@ sa_hmap_free(sa_hmap *hmap) {
 }
 
 int
-sa_hmap_add(sa_hmap *hmap, sa_hmap_key key, sa_hmap_value value) {  
+sa_hmap_add(sa_hmap *hmap, sa_hmap_key key, sa_hmap_value value) {
+  assert(hmap != NULL);
+  
   if (sa_hmap_contains(hmap, key)) {
     return 2;
   }
+  
   sa_hmap_keyval *keyval = sa_hmap_keyval_new(key, value);
   int bin_no = key_bin(hmap, key);
   assert(bin_no < BINS_NO);
   sa_list_append(hmap_bin(hmap, bin_no), keyval);
+  
   return 0;
 }
 
@@ -154,21 +158,21 @@ sa_hmap_print_bin_lengths(struct sa_hmap *hmap) {
 #define iter_terminated(iter) ((iter)->bin_no == (iter)->hmap->bins_no)
 
 
-sa_hmap_iterator *
-sa_hmap_iterator_new(sa_hmap *hmap) {
-  sa_hmap_iterator *iter = malloc(sizeof(sa_hmap_iterator));
-  *iter = (sa_hmap_iterator){.hmap = hmap, .bin_no = -1, .current = NULL};
+sa_hmap_iter *
+sa_hmap_iter_new(sa_hmap *hmap) {
+  sa_hmap_iter *iter = malloc(sizeof(sa_hmap_iter));
+  *iter = (sa_hmap_iter){.hmap = hmap, .bin_no = -1, .current = NULL};
   return iter;
 }
 
 void
-sa_hmap_iterator_free(sa_hmap_iterator *iter) {
+sa_hmap_iter_free(sa_hmap_iter *iter) {
   assert(iter != NULL);
   free(iter);
 }
 
 sa_hmap_keyval *
-sa_hmap_iterator_next(sa_hmap_iterator *iter) {
+sa_hmap_iter_next(sa_hmap_iter *iter) {
   assert(iter != NULL);
   
   if (iter_terminated(iter)) {

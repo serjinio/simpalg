@@ -24,11 +24,11 @@ sa_htbl_value sa_htbl_remove(sa_htbl *htbl, sa_htbl_value value);
 
 /* iterator */
 
-#define sa_htbl_iterator sa_hmap_iterator
+#define sa_htbl_iter sa_hmap_iter
 
-#define sa_htbl_iterator_new sa_hmap_iterator_new
-#define sa_htbl_iterator_free sa_hmap_iterator_free
+#define sa_htbl_iter_new sa_hmap_iter_new
+#define sa_htbl_iter_free sa_hmap_iter_free
 
-sa_htbl_value *sa_htbl_iterator_next(sa_htbl_iterator *iter);
+sa_htbl_value *sa_htbl_iter_next(sa_htbl_iter *iter);
 
 #endif
